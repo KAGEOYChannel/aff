@@ -24,7 +24,7 @@ const Navbar = () => {
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
             <ShoppingBag className="text-white w-6 h-6" />
           </div>
-          <span className="font-display font-bold text-lg md:text-xl tracking-tight">Affiliate<span className="text-blue-500">Hub</span></span>
+          <span className="font-display font-bold text-lg md:text-xl tracking-tight">Awan<span className="text-blue-500">Shop</span></span>
         </Link>
 
         <div className="flex items-center gap-4">
@@ -554,7 +554,7 @@ export default function App() {
         </Routes>
         
         <footer className="py-12 border-t border-white/5 text-center text-neutral-500 text-sm">
-          <p>&copy; 2026 AffiliateHub 3D. Dibuat dengan &hearts; untuk kesuksesan Anda.</p>
+          <p>&copy; 2026 Cek Keranjang Lu. Dibuat dengan &hearts; with AwanShop.</p>
         </footer>
       </div>
     </Router>
