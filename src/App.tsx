@@ -24,26 +24,19 @@ const Navbar = () => {
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
             <ShoppingBag className="text-white w-6 h-6" />
           </div>
-          <span className="font-display font-bold text-xl tracking-tight">Affiliate<span className="text-blue-500">Hub</span></span>
+          <span className="font-display font-bold text-lg md:text-xl tracking-tight">Affiliate<span className="text-blue-500">Hub</span></span>
         </Link>
 
         <div className="flex items-center gap-4">
-          <Link 
-            to={isAdmin ? "/" : "/admin"} 
-            className="glass-button px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-medium"
-          >
-            {isAdmin ? (
-              <>
-                <ShoppingBag className="w-4 h-4" />
-                <span>Lihat Toko</span>
-              </>
-            ) : (
-              <>
-                <LayoutDashboard className="w-4 h-4" />
-                <span>Manajemen</span>
-              </>
-            )}
-          </Link>
+          {isAdmin && (
+            <Link 
+              to="/" 
+              className="glass-button px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-medium"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span className="hidden sm:inline">Lihat Toko</span>
+            </Link>
+          )}
         </div>
       </div>
     </nav>
@@ -72,7 +65,8 @@ const PublicView = () => {
         const branch = localStorage.getItem("gh_branch") || "main";
         
         if (owner && repo) {
-          const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/products.json`);
+          // Add cache-busting timestamp to ensure fresh data
+          const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/products.json?t=${Date.now()}`);
           if (res.ok) {
             const data = await res.json();
             setProducts(data);
@@ -101,11 +95,11 @@ const PublicView = () => {
 
   return (
     <div className="pt-28 pb-12 px-4 max-w-7xl mx-auto">
-      <header className="text-center mb-12">
+      <header className="text-center mb-8 md:mb-12">
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl md:text-6xl font-display font-bold mb-4"
+          className="text-3xl md:text-6xl font-display font-bold mb-4 px-2"
         >
           Temukan Produk <span className="text-blue-500">Favoritmu</span>
         </motion.h1>
@@ -113,30 +107,30 @@ const PublicView = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-neutral-400 max-w-2xl mx-auto"
+          className="text-neutral-400 max-w-2xl mx-auto text-sm md:text-base px-4"
         >
           Koleksi produk pilihan terbaik dengan harga spesial. Cari berdasarkan nama atau nomor produk.
         </motion.p>
       </header>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-12">
+      <div className="flex flex-col md:flex-row gap-4 mb-8 md:mb-12">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 w-5 h-5" />
           <input 
             type="text" 
             placeholder="Cari nama atau nomor produk..."
-            className="w-full glass-card bg-white/5 border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+            className="w-full glass-card bg-white/5 border-white/10 rounded-2xl py-3 md:py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm md:text-base"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
           {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}
               className={cn(
-                "px-6 py-4 rounded-2xl font-medium whitespace-nowrap transition-all",
+                "px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl font-medium whitespace-nowrap transition-all text-sm md:text-base",
                 category === cat ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "glass-card hover:bg-white/10"
               )}
             >
@@ -148,10 +142,10 @@ const PublicView = () => {
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
           <AnimatePresence mode="popLayout">
             {filteredProducts.map((product, idx) => (
               <motion.div
@@ -161,7 +155,7 @@ const PublicView = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ delay: idx * 0.05 }}
-                className="glass-card rounded-3xl overflow-hidden group three-d-hover"
+                className="glass-card rounded-2xl md:rounded-3xl overflow-hidden group three-d-hover"
               >
                 <div className="aspect-square relative overflow-hidden">
                   <img 
@@ -170,21 +164,21 @@ const PublicView = () => {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold border border-white/10">
+                  <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-black/50 backdrop-blur-md px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold border border-white/10">
                     #{product.number}
                   </div>
                 </div>
-                <div className="p-6">
-                  <div className="text-xs text-blue-400 font-bold uppercase tracking-wider mb-2">{product.category}</div>
-                  <h3 className="font-display font-bold text-lg mb-4 line-clamp-2 min-h-[3.5rem]">{product.name}</h3>
+                <div className="p-3 md:p-6">
+                  <div className="text-[10px] md:text-xs text-blue-400 font-bold uppercase tracking-wider mb-1 md:mb-2">{product.category}</div>
+                  <h3 className="font-display font-bold text-sm md:text-lg mb-3 md:mb-4 line-clamp-2 min-h-[2.5rem] md:min-h-[3.5rem]">{product.name}</h3>
                   <a 
                     href={product.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full glass-button bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white py-3 rounded-xl flex items-center justify-center gap-2 font-bold transition-all"
+                    className="w-full glass-button bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white py-2 md:py-3 rounded-lg md:rounded-xl flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm font-bold transition-all"
                   >
-                    <span>Beli Sekarang</span>
-                    <ExternalLink className="w-4 h-4" />
+                    <span>Beli</span>
+                    <ExternalLink className="w-3 h-3 md:w-4 md:h-4" />
                   </a>
                 </div>
               </motion.div>
@@ -221,7 +215,8 @@ const AdminPanel = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     category: "Elektronik",
-    image: ""
+    image: "",
+    number: ""
   });
   const [uploading, setUploading] = useState(false);
 
@@ -273,13 +268,13 @@ const AdminPanel = () => {
         {
           ...newProduct,
           id: Date.now().toString(),
-          number: (products.length + 1).toString().padStart(3, "0"),
+          number: newProduct.number || (products.length + 1).toString().padStart(3, "0"),
         } as Product
       ];
       await service.saveProducts(updatedProducts);
       setProducts(updatedProducts);
       setIsAdding(false);
-      setNewProduct({ category: "Elektronik", image: "" });
+      setNewProduct({ category: "Elektronik", image: "", number: "" });
     } catch (e) {
       alert("Gagal menyimpan produk.");
     } finally {
@@ -380,18 +375,18 @@ const AdminPanel = () => {
 
   return (
     <div className="pt-28 pb-12 px-4 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold">Manajemen Produk</h1>
-          <p className="text-neutral-400">Kelola daftar link affiliasi Anda.</p>
+          <h1 className="text-2xl md:text-3xl font-display font-bold">Manajemen Produk</h1>
+          <p className="text-sm text-neutral-400">Kelola daftar link affiliasi Anda.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           <button 
             onClick={() => setIsAdding(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all"
+            className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all text-sm md:text-base"
           >
             <Plus className="w-5 h-5" />
-            <span>Tambah Produk</span>
+            <span>Tambah</span>
           </button>
           <button 
             onClick={() => {
@@ -420,14 +415,14 @@ const AdminPanel = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {products.map(product => (
-          <div key={product.id} className="glass-card rounded-2xl p-4 flex gap-4 items-center">
-            <img src={product.image} className="w-20 h-20 rounded-xl object-cover bg-neutral-800" referrerPolicy="no-referrer" />
+          <div key={product.id} className="glass-card rounded-2xl p-3 md:p-4 flex gap-3 md:gap-4 items-center">
+            <img src={product.image} className="w-16 h-16 md:w-20 md:h-20 rounded-xl object-cover bg-neutral-800" referrerPolicy="no-referrer" />
             <div className="flex-1 min-w-0">
-              <div className="text-xs text-neutral-500 font-bold">#{product.number}</div>
-              <h3 className="font-bold truncate">{product.name}</h3>
-              <div className="text-xs text-blue-400">{product.category}</div>
+              <div className="text-[10px] md:text-xs text-neutral-500 font-bold">#{product.number}</div>
+              <h3 className="font-bold truncate text-sm md:text-base">{product.name}</h3>
+              <div className="text-[10px] md:text-xs text-blue-400">{product.category}</div>
             </div>
             <button 
               onClick={() => handleDeleteProduct(product.id)}
@@ -460,6 +455,15 @@ const AdminPanel = () => {
                         className="w-full glass-card bg-white/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50" 
                         value={newProduct.name || ""}
                         onChange={e => setNewProduct(prev => ({ ...prev, name: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-400 mb-1">Nomor Produk (Opsional)</label>
+                      <input 
+                        className="w-full glass-card bg-white/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50" 
+                        placeholder="Contoh: 001"
+                        value={newProduct.number || ""}
+                        onChange={e => setNewProduct(prev => ({ ...prev, number: e.target.value }))}
                       />
                     </div>
                     <div>
