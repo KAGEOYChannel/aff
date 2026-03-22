@@ -208,8 +208,13 @@ const PublicView = () => {
 
 const AdminPanel = () => {
   const [config, setConfig] = useState<GitHubConfig | null>(() => {
-    const saved = localStorage.getItem("gh_config");
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem("gh_config");
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      console.error("Failed to parse gh_config", e);
+      return null;
+    }
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
