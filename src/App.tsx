@@ -71,6 +71,9 @@ const PublicView = () => {
           if (hostname.endsWith(".github.io")) {
             owner = hostname.split(".")[0];
             repo = pathname.split("/")[1] || repo;
+          } else if (hostname === "awanshop.my.id") {
+            owner = "kageoychannel"; // Hardcoded for your custom domain
+            repo = "aff";
           }
         }
 
