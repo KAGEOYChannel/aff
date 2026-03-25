@@ -624,7 +624,7 @@ export default function App() {
         
         <footer className="py-12 border-t border-white/5 text-center">
           <div className="flex justify-center gap-6 mb-6">
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-neutral-500 hover:text-pink-500 transition-colors">
+            <a href="https://www.instagram.com/cekkeranjanglu" target="_blank" rel="noopener noreferrer" className="text-neutral-500 hover:text-pink-500 transition-colors">
               <Instagram className="w-5 h-5" />
             </a>
             <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="text-neutral-500 hover:text-white transition-colors">
