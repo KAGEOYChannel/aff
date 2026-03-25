@@ -46,10 +46,12 @@ const Navbar = () => {
 // --- Pages ---
 
 const DUMMY_PRODUCTS: Product[] = [
-  { id: "1", name: "Smartphone Ultra Pro Max", number: "001", link: "#", image: "https://picsum.photos/seed/phone/400/400", category: "Elektronik" },
-  { id: "2", name: "Sneakers Sporty X", number: "002", link: "#", image: "https://picsum.photos/seed/shoes/400/400", category: "Fashion" },
-  { id: "3", name: "Skincare Glow Serum", number: "003", link: "#", image: "https://picsum.photos/seed/serum/400/400", category: "Kecantikan" },
+  { id: "1", name: "Smartphone Ultra Pro Max", number: "001", link: "#", image: "https://picsum.photos/seed/phone/400/400", categories: ["Elektronik"] },
+  { id: "2", name: "Sneakers Sporty X", number: "002", link: "#", image: "https://picsum.photos/seed/shoes/400/400", categories: ["Fashion"] },
+  { id: "3", name: "Skincare Glow Serum", number: "003", link: "#", image: "https://picsum.photos/seed/serum/400/400", categories: ["Kecantikan"] },
 ];
+
+const CATEGORY_OPTIONS = ["Elektronik", "Fashion", "Kecantikan", "Rumah Tangga", "Lainnya"];
 
 const PublicView = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -100,11 +102,12 @@ const PublicView = () => {
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.number.includes(search);
-    const matchesCategory = category === "Semua" || p.category === category;
+    const productCategories = p.categories || [];
+    const matchesCategory = category === "Semua" || productCategories.includes(category);
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ["Semua", ...new Set(products.map(p => p.category))];
+  const allCategories = ["Semua", ...new Set(products.flatMap(p => p.categories || []))];
 
   return (
     <div className="pt-28 pb-12 px-4 max-w-7xl mx-auto">
@@ -138,7 +141,7 @@ const PublicView = () => {
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
-          {categories.map(cat => (
+          {allCategories.map(cat => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}
@@ -182,7 +185,13 @@ const PublicView = () => {
                   </div>
                 </div>
                 <div className="p-3 md:p-6">
-                  <div className="text-[10px] md:text-xs text-blue-400 font-bold uppercase tracking-wider mb-1 md:mb-2">{product.category}</div>
+                  <div className="flex flex-wrap gap-1 mb-1 md:mb-2">
+                    {(product.categories || []).map(cat => (
+                      <span key={cat} className="text-[8px] md:text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
                   <h3 className="font-display font-bold text-sm md:text-lg mb-3 md:mb-4 line-clamp-2 min-h-[2.5rem] md:min-h-[3.5rem]">{product.name}</h3>
                   <a 
                     href={product.link}
@@ -226,8 +235,9 @@ const AdminPanel = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
-    category: "Elektronik",
+    categories: ["Elektronik"],
     image: "",
     number: ""
   });
@@ -276,23 +286,39 @@ const AdminPanel = () => {
     setLoading(true);
     try {
       const service = new GitHubService(config);
-      const updatedProducts = [
-        ...products,
-        {
-          ...newProduct,
-          id: Date.now().toString(),
-          number: newProduct.number || (products.length + 1).toString().padStart(3, "0"),
-        } as Product
-      ];
+      let updatedProducts: Product[];
+      
+      if (editingId) {
+        updatedProducts = products.map(p => 
+          p.id === editingId ? { ...p, ...newProduct } as Product : p
+        );
+      } else {
+        updatedProducts = [
+          ...products,
+          {
+            ...newProduct,
+            id: Date.now().toString(),
+            number: newProduct.number || (products.length + 1).toString().padStart(3, "0"),
+          } as Product
+        ];
+      }
+      
       await service.saveProducts(updatedProducts);
       setProducts(updatedProducts);
       setIsAdding(false);
-      setNewProduct({ category: "Elektronik", image: "", number: "" });
+      setEditingId(null);
+      setNewProduct({ categories: ["Elektronik"], image: "", number: "" });
     } catch (e) {
       alert("Gagal menyimpan produk.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditClick = (product: Product) => {
+    setNewProduct(product);
+    setEditingId(product.id);
+    setIsAdding(true);
   };
 
   const handleDeleteProduct = async (id: string) => {
@@ -435,14 +461,28 @@ const AdminPanel = () => {
             <div className="flex-1 min-w-0">
               <div className="text-[10px] md:text-xs text-neutral-500 font-bold">#{product.number}</div>
               <h3 className="font-bold truncate text-sm md:text-base">{product.name}</h3>
-              <div className="text-[10px] md:text-xs text-blue-400">{product.category}</div>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {(product.categories || []).map(cat => (
+                  <span key={cat} className="text-[8px] md:text-[10px] text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded">
+                    {cat}
+                  </span>
+                ))}
+              </div>
             </div>
-            <button 
-              onClick={() => handleDeleteProduct(product.id)}
-              className="p-2 text-neutral-500 hover:text-red-500 transition-colors"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={() => handleEditClick(product)}
+                className="p-2 text-neutral-500 hover:text-blue-500 transition-colors"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => handleDeleteProduct(product.id)}
+                className="p-2 text-neutral-500 hover:text-red-500 transition-colors"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         ))}
       </div>
@@ -457,7 +497,7 @@ const AdminPanel = () => {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="glass-card w-full max-w-2xl rounded-3xl p-8 max-h-[90vh] overflow-y-auto"
             >
-              <h2 className="text-2xl font-bold mb-6">Tambah Produk Baru</h2>
+              <h2 className="text-2xl font-bold mb-6">{editingId ? "Edit Produk" : "Tambah Produk Baru"}</h2>
               <form onSubmit={handleAddProduct} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
@@ -480,18 +520,30 @@ const AdminPanel = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-400 mb-1">Kategori</label>
-                      <select 
-                        className="w-full glass-card bg-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                        value={newProduct.category}
-                        onChange={e => setNewProduct(prev => ({ ...prev, category: e.target.value }))}
-                      >
-                        <option>Elektronik</option>
-                        <option>Fashion</option>
-                        <option>Kecantikan</option>
-                        <option>Rumah Tangga</option>
-                        <option>Lainnya</option>
-                      </select>
+                      <label className="block text-sm font-medium text-neutral-400 mb-1">Kategori (Pilih beberapa)</label>
+                      <div className="flex flex-wrap gap-2">
+                        {CATEGORY_OPTIONS.map(cat => (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => {
+                              const current = newProduct.categories || [];
+                              const updated = current.includes(cat)
+                                ? current.filter(c => c !== cat)
+                                : [...current, cat];
+                              setNewProduct(prev => ({ ...prev, categories: updated }));
+                            }}
+                            className={cn(
+                              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                              (newProduct.categories || []).includes(cat)
+                                ? "bg-blue-600 text-white"
+                                : "bg-white/5 text-neutral-400 hover:bg-white/10"
+                            )}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-400 mb-1">Link Affiliasi</label>
@@ -534,7 +586,11 @@ const AdminPanel = () => {
                 <div className="flex gap-4 pt-4">
                   <button 
                     type="button"
-                    onClick={() => setIsAdding(false)}
+                    onClick={() => {
+                      setIsAdding(false);
+                      setEditingId(null);
+                      setNewProduct({ categories: ["Elektronik"], image: "", number: "" });
+                    }}
                     className="flex-1 glass-button py-4 rounded-xl font-bold"
                   >
                     Batal
@@ -544,7 +600,7 @@ const AdminPanel = () => {
                     disabled={loading || uploading}
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50"
                   >
-                    {loading ? "Menyimpan..." : "Simpan Produk"}
+                    {loading ? "Menyimpan..." : (editingId ? "Update Produk" : "Simpan Produk")}
                   </button>
                 </div>
               </form>

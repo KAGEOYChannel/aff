@@ -4,7 +4,7 @@ export interface Product {
   number: string;
   link: string;
   image: string;
-  category: string;
+  categories: string[];
 }
 
 export interface GitHubConfig {
